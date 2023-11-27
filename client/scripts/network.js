@@ -1,9 +1,22 @@
 window.URL = window.URL || window.webkitURL;
 window.isRtcSupported = !!(window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection);
 
+function toBinary(string) {
+    const codeUnits = new Uint16Array(string.length);
+    for (let i = 0; i < codeUnits.length; i++) {
+      codeUnits[i] = string.charCodeAt(i);
+    }
+    return btoa(String.fromCharCode(...new Uint8Array(codeUnits.buffer)));
+  }
 class ServerConnection {
 
     constructor() {
+        // prompt user to set names with an alert box
+        if(!localStorage.getItem('peerName') || document.cookie.indexOf('peerName') === -1) {
+            const preferedName = prompt('Please enter your name');
+            localStorage.setItem('peerName', toBinary(preferedName));
+            document.cookie = 'peerName=' + toBinary(preferedName);
+        }
         this._connect();
         Events.on('beforeunload', e => this._disconnect());
         Events.on('pagehide', e => this._disconnect());

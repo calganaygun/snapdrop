@@ -158,7 +158,15 @@ class SnapdropServer {
     }
 }
 
-
+function fromBinary(encoded) {
+    const binary = atob(encoded);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < bytes.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return String.fromCharCode(...new Uint16Array(bytes.buffer));
+  }
+  
 
 class Peer {
 
@@ -224,7 +232,11 @@ class Peer {
         if(!deviceName)
             deviceName = 'Unknown Device';
 
-        const displayName = uniqueNamesGenerator({
+        const customNameCookie = req.headers.cookie && req.headers.cookie.split(';').find(c => c.trim().startsWith('peerName='))
+        const requestedCustomName = customNameCookie && fromBinary(customNameCookie.split('=')[1].trim())
+
+        // BOOKMARK: Name Generation
+        const displayName = requestedCustomName || uniqueNamesGenerator({
             length: 2,
             separator: ' ',
             dictionaries: [colors, animals],
